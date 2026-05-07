@@ -12,4 +12,5 @@ tags
 *.mod
 # Compiled Python
 *.pyc
-
+#CTest Runtime output
+/Testing/
