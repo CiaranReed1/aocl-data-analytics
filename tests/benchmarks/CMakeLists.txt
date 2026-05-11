@@ -22,28 +22,115 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-include_directories(${CMAKE_SOURCE_DIR}/source/include)
-include_directories(${CMAKE_SOURCE_DIR}/source)
-include_directories(${CMAKE_SOURCE_DIR}/source/core/dynamic_dispatch)
-
-set(BENCHMARK_EXES 
+set(INTERNAL_BENCHMARKS
     bench_internal_transpose_helper
 )
 
-add_executable(bench_internal_transpose_helper 
-bench_internal_transpose_helper.cpp
+set(INTERNAL_INC_DIRS
+    ${CMAKE_SOURCE_DIR}/source/include
+    ${CMAKE_SOURCE_DIR}/source/core/csv
+    ${CMAKE_SOURCE_DIR}/source/core/clustering
+    ${CMAKE_SOURCE_DIR}/source/core/optimization
+    ${CMAKE_SOURCE_DIR}/source/core/data_management
+    ${CMAKE_SOURCE_DIR}/source/core/drivers
+    ${CMAKE_SOURCE_DIR}/source/core/factorization
+    ${CMAKE_SOURCE_DIR}/source/core/nlls
+    ${CMAKE_SOURCE_DIR}/source/core/nearest_neighbors
+    ${CMAKE_SOURCE_DIR}/source/core/utilities
+    ${CMAKE_SOURCE_DIR}/source/core/decision_forest
+    ${CMAKE_SOURCE_DIR}/source/core/decision_forest/tree
+    ${CMAKE_SOURCE_DIR}/source/core/metrics
+    ${CMAKE_SOURCE_DIR}/source/core/linear_model
+    ${CMAKE_SOURCE_DIR}/source/core/basic_statistics
+    ${CMAKE_SOURCE_DIR}/source/core/dynamic_dispatch
+    ${CMAKE_SOURCE_DIR}/source/core/kernel_functions
+    ${CMAKE_SOURCE_DIR}/source/core/svm
+    ${CMAKE_SOURCE_DIR}/source/core/interpolation
+    ${CMAKE_SOURCE_DIR}/source/core/train_test_split
+    ${CMAKE_SOURCE_DIR}/source/core/approximate_neighbors
 )
 
-foreach(target ${BENCHMARK_EXES})
-    target_link_libraries(${target} PRIVATE aocl-da)
+add_executable(bench_internal_transpose_helper
+    bench_internal_transpose_helper.cpp
+)
 
-    if(BUILD_SMP)
-        target_link_libraries(${target} PRIVATE OpenMP::OpenMP_CXX)
+foreach(benchmark ${INTERNAL_BENCHMARKS})
+
+  target_include_directories(${benchmark}
+    PRIVATE
+      ${INTERNAL_INC_DIRS}
+  )
+
+  target_link_libraries(${benchmark}
+    PRIVATE
+      aocl-da
+  )
+
+  if(BUILD_SMP)
+    target_link_libraries(${benchmark}
+      PRIVATE
+        OpenMP::OpenMP_CXX
+    )
+  endif()
+
+  target_compile_definitions(${benchmark}
+    PRIVATE
+      ${AOCLDA_ILP64}
+  )
+
+  target_link_directories(${benchmark}
+    PRIVATE
+      ${IFORT_LIBS}
+      ${FLANG_LIBS}
+  )
+
+  target_link_libraries(${benchmark}
+    PRIVATE
+      ${FORTRAN_RUNTIME}
+  )
+
+  # Match the architecture namespace used by internal AOCL-DA source files.
+  if(ARCH STREQUAL "dynamic" OR ARCH STREQUAL "generic")
+    target_compile_definitions(${benchmark}
+      PRIVATE
+        ARCH_generic
+        ZNVER_MAX=generic
+    )
+
+  elseif(ARCH STREQUAL "generic_avx512")
+    target_compile_definitions(${benchmark}
+      PRIVATE
+        ARCH_generic_avx512
+        ZNVER_MAX=generic_avx512
+    )
+
+  elseif(ARCH STREQUAL "native")
+    extract_native_namespace(NATIVE_NAMESPACE)
+
+    if(NATIVE_NAMESPACE STREQUAL "generic")
+      target_compile_definitions(${benchmark}
+        PRIVATE
+          ARCH_generic
+          ZNVER_MAX=generic
+      )
+    else()
+      target_compile_definitions(${benchmark}
+        PRIVATE
+          ARCH_znver=${NATIVE_NAMESPACE}
+          ZNVER_MAX=zen${NATIVE_NAMESPACE}
+      )
     endif()
 
-    target_compile_definitions(${target} PRIVATE ${AOCLDA_ILP64})
-    target_link_directories(${target} PRIVATE ${IFORT_LIBS})
-    target_link_directories(${target} PRIVATE ${FLANG_LIBS})
-    target_link_libraries(${target} PRIVATE ${FORTRAN_RUNTIME})
-endforeach()
+  else()
+    if(${ARCH} MATCHES "^znver([0-9]+)$")
+      set(znver ${CMAKE_MATCH_1})
+    endif()
 
+    target_compile_definitions(${benchmark}
+      PRIVATE
+        ARCH_znver=${znver}
+        ZNVER_MAX=zen${znver}
+    )
+  endif()
+
+endforeach()
