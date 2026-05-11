@@ -29,8 +29,8 @@ set(BENCHMARK_EXES
     bench_internal_transpose_helper
 )
 
-add_executable(
-    bench_internal_transpose_helper.cpp
+add_executable(bench_internal_transpose_helper 
+bench_internal_transpose_helper.cpp
 )
 
 foreach(target ${BENCHMARK_EXES})
