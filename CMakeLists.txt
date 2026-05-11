@@ -630,6 +630,8 @@ message(NOTICE
         "Build the EXAMPLE programs  BUILD_EXAMPLES.....: ${BUILD_EXAMPLES}")
 message(NOTICE
         "Build GTEST unit-tests      BUILD_GTEST........: ${BUILD_GTEST}")
+message(NOTICE
+        "Build BENCHMARK programs    BUILD_BENCHMARKS...: ${BUILD_BENCHMARKS}")
 
 message(NOTICE "\nDEPENDENT LIBRARIES")
 message(NOTICE "BLAS             BLAS=${BLAS}")
