@@ -113,6 +113,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Options
 option(BUILD_EXAMPLES "Build the example programs" ON)
 option(BUILD_GTEST "Build Gtest unit-tests" ON)
+option(BUILD_BENCHMARKS "Build benchmark programs" OFF)
 option(COVERAGE "Builds coverage of Gtests and examples (Debug/GCC)" OFF)
 option(BUILD_FORTRAN
        "Builds aocl-da with the Fortran dependencies, RALFit and lbfgsb" ON)
@@ -528,8 +529,8 @@ if(NOT USE_EXISTING_DA)
         "${PROJECT_SOURCE_DIR}/tools/valgrind_suppress.txt")
   endif()
 
-  if (BUILD_EXAMPLES OR BUILD_GTEST)
-    # Build example and unit test programs
+  if (BUILD_EXAMPLES OR BUILD_GTEST OR BUILD_BENCHMARKS)
+    # Build example, benchmark and unit test programs
     include(CTest)
   endif()
 
@@ -539,7 +540,7 @@ if(NOT USE_EXISTING_DA)
         "${PROJECT_SOURCE_DIR}/tools/valgrind_suppress.txt")
   endif()
 
-  if (BUILD_EXAMPLES OR BUILD_GTEST)
+  if (BUILD_EXAMPLES OR BUILD_GTEST OR BUILD_BENCHMARKS)
     add_subdirectory(tests)
   endif()
 endif()

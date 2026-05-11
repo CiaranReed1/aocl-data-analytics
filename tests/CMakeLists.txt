@@ -33,3 +33,8 @@ endif()
 if(BUILD_GTEST)
   add_subdirectory(unit_tests)
 endif()
+
+# Build benchmark programs 
+if(BUILD_BENCHMARKS)
+  add_subdirectory(benchmarks)
+endif()
