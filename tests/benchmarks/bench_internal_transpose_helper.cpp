@@ -26,7 +26,7 @@
  */
 
 #include "aoclda.h"
-#include "core/utilities/da_utils.hpp"
+#include "da_utils.hpp"
 #include <algorithm>
 #include <chrono>
 #include <cstdlib>
