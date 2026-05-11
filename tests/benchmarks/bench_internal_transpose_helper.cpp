@@ -161,7 +161,7 @@ void bench_copy(da_order input_order, da_int m, da_int n, int repeats)
     da_int ldb = input_order == row_major ? m : n;
 
     //initialise matrices
-    const size_t size = static_cast<size_t>(m)*static_cast<size_t>(n)
+    const size_t size = static_cast<size_t>(m)*static_cast<size_t>(n);
     T *A = new T[size];
     T *B = new T[size];
     for (da_int i = 0; i < m; ++i) {
