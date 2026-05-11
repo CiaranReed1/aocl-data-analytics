@@ -24,6 +24,7 @@
 
 include_directories(${CMAKE_SOURCE_DIR}/source/include)
 include_directories(${CMAKE_SOURCE_DIR}/source)
+include_directories(${CMAKE_SOURCE_DIR}/source/core/dynamic_dispatch)
 
 set(BENCHMARK_EXES 
     bench_internal_transpose_helper
