@@ -217,7 +217,7 @@ void bench_copy(da_order input_order, da_int m, da_int n, int repeats)
 
     //print results
     std::cout << type_name<T>() << ","
-              << "internal_transpose_helper,"
+              << (input_order == row_major ? "copy_transpose_2D_array_row_to_column_major" : "copy_transpose_2D_array_column_to_row_major") << ","
               << (input_order == row_major ? "row_to_column" : "column_to_row") << ","
               << m << ","
               << n << ","
