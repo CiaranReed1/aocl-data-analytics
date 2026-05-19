@@ -259,7 +259,7 @@ int main(int argc, char **argv){
     
     //included shapes, specificially included short fat and tall skinny
     std::vector<Shape> shapes = {
-        {64, 64},
+       {64, 64},
         {128, 128},
         {256, 256},
         {512, 512},
@@ -292,7 +292,11 @@ int main(int argc, char **argv){
         {8192,256},
         {256,8192},
         {8000,250},
-        {250,8000}
+        {250,8000},
+        {10,20000},
+        {15,200000},
+        {20000,10},
+        {200000,15}
     };
 
     std::cout << "type,kernel,direction,m,n,threads,repeats,"
