@@ -299,7 +299,7 @@ int main(int argc, char **argv){
         {200000,15}
     };
 
-    std::cout << "type,kernel,direction,m,n,threads,repeats,"
+    std::cout << "type,kernel,direction,n,m,threads,repeats,"
           << "mean_seconds,median_seconds,min_seconds,max_seconds,stddev_seconds,"
           << "mean_gbps,median_gbps,min_gbps,max_gbps,stddev_gbps,correct\n";
 
