@@ -35,10 +35,33 @@
 #include <vector>
 #include <cmath>
 #include <type_traits>
-
+#include <cstdint>
+#include <immintrin.h>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+
+namespace {
+
+    void flush_cache(std::size_t size_bytes = 512ULL * 1024ULL * 1024ULL)
+    {
+        static std::vector<std::uint8_t> buffer(size_bytes, 1);
+
+        const volatile std::uint8_t* data = buffer.data();
+
+        std::uint64_t sum = 0;
+
+        constexpr std::size_t cache_line_size = 64;
+
+        for (std::size_t i = 0; i < buffer.size(); i += cache_line_size)
+        {
+            sum += data[i];
+        }
+
+        asm volatile("" : : "r"(sum) : "memory");
+    }
+
+}
 
 
 static int get_threads() {
@@ -196,6 +219,7 @@ void bench_copy(da_order input_order, da_int m, da_int n, int repeats)
 
     for(int r = 0; r < repeats; r++)
     {
+        flush_cache();
         auto t0 = std::chrono::steady_clock::now();
         if(input_order == row_major)
         {
@@ -299,7 +323,7 @@ int main(int argc, char **argv){
         {200000,15}
     };
 
-    std::cout << "type,kernel,direction,n,m,threads,repeats,"
+    std::cout << "type,kernel,direction,m,n,threads,repeats,"
           << "mean_seconds,median_seconds,min_seconds,max_seconds,stddev_seconds,"
           << "mean_gbps,median_gbps,min_gbps,max_gbps,stddev_gbps,correct\n";
 
