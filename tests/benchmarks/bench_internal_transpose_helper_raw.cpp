@@ -32,6 +32,8 @@
 #include <chrono>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include <cstdint>
@@ -92,6 +94,37 @@ struct Shape {
     da_int m;
     da_int n;
 };
+
+static std::vector<Shape> make_aspect_ratio_shapes(std::uint64_t num_elements)
+{
+    static const std::vector<std::uint64_t> minor_dimensions = {
+        10, 15, 24, 40, 60, 96, 160, 240, 384,
+        600, 960, 1500, 2400, 4000, 6000, 10000, 16000
+    };
+
+    std::vector<Shape> shapes;
+    shapes.reserve(2 * minor_dimensions.size());
+
+    for (const std::uint64_t minor : minor_dimensions) {
+        const std::uint64_t major = num_elements / minor;
+
+        if (major == 0 ||
+            major > static_cast<std::uint64_t>(std::numeric_limits<da_int>::max())) {
+            throw std::invalid_argument(
+                "--num-elements produces a matrix dimension outside the da_int range");
+        }
+
+        const auto major_dim = static_cast<da_int>(major);
+        const auto minor_dim = static_cast<da_int>(minor);
+
+        // Match the configurable aspect-ratio benchmark: test both the
+        // tall-skinny and short-wide orientation for every minor dimension.
+        shapes.push_back({major_dim, minor_dim});
+        shapes.push_back({minor_dim, major_dim});
+    }
+
+    return shapes;
+}
 
 static const char *direction_name(da_order input_order)
 {
@@ -301,60 +334,40 @@ void run_type_benchmarks(const std::vector<Shape> &shapes, int repeats)
 int main(int argc, char **argv)
 {
     int repeats = 10;
+    std::uint64_t num_elements = 0;
 
-    if (argc >= 2) {
-        repeats = std::max(1, std::atoi(argv[1]));
+    try {
+        for (int i = 1; i < argc; ++i) {
+            const std::string argument = argv[i];
+
+            if (argument == "--repeats" && i + 1 < argc) {
+                repeats = std::max(1, std::stoi(argv[++i]));
+            } else if (argument == "--num-elements" && i + 1 < argc) {
+                num_elements = std::stoull(argv[++i]);
+            } else {
+                std::cerr << "Usage: " << argv[0]
+                          << " --num-elements N [--repeats R]\n";
+                return 1;
+            }
+        }
+
+        if (num_elements == 0) {
+            throw std::invalid_argument("--num-elements must be greater than zero");
+        }
+
+        const std::vector<Shape> shapes = make_aspect_ratio_shapes(num_elements);
+
+        std::cout << "type,kernel,direction,m,n,threads,repeats,repeat,"
+                  << "seconds,gbps,correct,"
+                  << "layout_case,tile_size,lda,ldb,logical_lda,logical_ldb,"
+                  << "forced_aligned,alignment,padding_mode\n";
+
+        run_type_benchmarks<float>(shapes, repeats);
+        run_type_benchmarks<double>(shapes, repeats);
+    } catch (const std::exception &error) {
+        std::cerr << "Error: " << error.what() << "\n";
+        return 1;
     }
-
-    // Included shapes, specifically including short-wide and tall-skinny cases.
-    std::vector<Shape> shapes = {
-        {64, 64},
-        {128, 128},
-        {256, 256},
-        {512, 512},
-        {1024, 1024},
-        {1000, 1000},
-        {2048, 2048},
-        {2000, 2000},
-        {4096, 4096},
-        {4000, 4000},
-        {8192, 8192},
-        {8000, 8000},
-        {16384, 16384},
-        {16000, 16000},
-        {1024, 64},
-        {1000, 60},
-        {64, 1024},
-        {60, 1000},
-        {4096, 256},
-        {4096, 64},
-        {4000, 250},
-        {4000, 60},
-        {256, 4096},
-        {64, 4096},
-        {250, 4000},
-        {60, 4000},
-        {8192, 64},
-        {8000, 60},
-        {64, 8192},
-        {60, 8000},
-        {8192, 256},
-        {256, 8192},
-        {8000, 250},
-        {250, 8000},
-        {10, 20000},
-        {15, 200000},
-        {20000, 10},
-        {200000, 15}
-    };
-
-    std::cout << "type,kernel,direction,m,n,threads,repeats,repeat,"
-              << "seconds,gbps,correct,"
-              << "layout_case,tile_size,lda,ldb,logical_lda,logical_ldb,"
-              << "forced_aligned,alignment,padding_mode\n";
-
-    run_type_benchmarks<float>(shapes, repeats);
-    run_type_benchmarks<double>(shapes, repeats);
 
     return 0;
 }
