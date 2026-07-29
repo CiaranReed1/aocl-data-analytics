@@ -59,6 +59,9 @@ add_executable(bench_internal_transpose_helper_raw
     bench_internal_transpose_helper_raw.cpp
 )
 
+add_executable(bench_internal_transpose_helper_extreme_raw
+    bench_internal_transpose_helper_extreme_raw.cpp)
+
 foreach(benchmark ${INTERNAL_BENCHMARKS})
 
   target_include_directories(${benchmark}
