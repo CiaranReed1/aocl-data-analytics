@@ -25,6 +25,7 @@
 set(INTERNAL_BENCHMARKS
     bench_internal_transpose_helper
     bench_internal_transpose_helper_raw
+    bench_internal_transpose_helper_extreme_raw
 )
 
 set(INTERNAL_INC_DIRS
