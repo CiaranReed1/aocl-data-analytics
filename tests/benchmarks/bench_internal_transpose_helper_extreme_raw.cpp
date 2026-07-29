@@ -37,6 +37,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <unordered_set>
 
 #ifdef _OPENMP
 #include <omp.h>
