@@ -26,6 +26,7 @@ set(INTERNAL_BENCHMARKS
     bench_internal_transpose_helper
     bench_internal_transpose_helper_raw
     bench_internal_transpose_helper_extreme_raw
+    bench_internal_transpose_helper_all
 )
 
 set(INTERNAL_INC_DIRS
@@ -62,6 +63,9 @@ add_executable(bench_internal_transpose_helper_raw
 
 add_executable(bench_internal_transpose_helper_extreme_raw
     bench_internal_transpose_helper_extreme_raw.cpp)
+
+add_executable(bench_internal_transpose_helper_all
+bench_internal_transpose_helper_all.cpp)
 
 foreach(benchmark ${INTERNAL_BENCHMARKS})
 
